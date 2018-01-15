@@ -173,6 +173,7 @@ namespace Emby.Server.Implementations.Security
         /// <param name="parameters">Json parameters to send to admin server</param>
         public async Task RegisterAppStoreSale(string parameters)
         {
+            return;
             var options = new HttpRequestOptions()
             {
                 Url = AppstoreRegUrl,
@@ -245,12 +246,11 @@ namespace Emby.Server.Implementations.Security
             string mb2Equivalent = null,
             string version = null)
         {
-/*
             var regInfo = LicenseFile.GetRegInfo(feature);
             var lastChecked = regInfo == null ? DateTime.MinValue : regInfo.LastChecked;
             var expDate = regInfo == null ? DateTime.MinValue : regInfo.ExpirationDate;
 
-            var maxCacheDays = 14;
+            var maxCacheDays = 365;
             var nextCheckDate = new [] { expDate, lastChecked.AddDays(maxCacheDays) }.Min();
 
             if (nextCheckDate > DateTime.UtcNow.AddDays(maxCacheDays))
@@ -268,7 +268,7 @@ namespace Emby.Server.Implementations.Security
 
             var success = reg.registered;
 
-            if (!(lastChecked > DateTime.UtcNow.AddDays(-1)) || !reg.registered)
+			if (!(lastChecked > DateTime.UtcNow.AddDays(-1)) || !reg.registered)
             {
                 var data = new Dictionary<string, string>
                 {
@@ -283,7 +283,7 @@ namespace Emby.Server.Implementations.Security
 
                 try
                 {
-                    var options = new HttpRequestOptions
+                    /*var options = new HttpRequestOptions
                     {
                         Url = MBValidateUrl,
 
@@ -293,12 +293,17 @@ namespace Emby.Server.Implementations.Security
                     };
 
                     options.SetPostData(data);
-
+                    
                     using (var json = (await _httpClient.Post(options).ConfigureAwait(false)).Content)
                     {
                         reg = _jsonSerializer.DeserializeFromStream<RegRecord>(json);
                         success = true;
-                    }
+                    }*/
+                    var json = new RegRecord();
+                    json.expDate = DateTime.UtcNow.AddDays(3000);
+                    json.registered = true;
+                    json.featId = feature;
+                    json.key = SupporterKey;
 
                     if (true)
                     {
@@ -317,7 +322,6 @@ namespace Emby.Server.Implementations.Security
                     _logger.ErrorException("Error checking registration status of {0}", e, feature);
                 }
             }
-*/
 
             var record = new MBRegistrationRecord
             {
@@ -326,7 +330,6 @@ namespace Emby.Server.Implementations.Security
                 RegChecked = true,
                 RegError = false
             };
-
 
             record.TrialVersion = IsInTrial(record.ExpirationDate, record.RegChecked, record.IsRegistered);
             record.IsValid = !record.RegChecked || record.IsRegistered || record.TrialVersion;
